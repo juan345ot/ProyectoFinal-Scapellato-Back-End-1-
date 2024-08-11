@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Productos en Tiempo Real</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/socket.js"></script>
+</head>
+<body>
+  <h1>Productos en Tiempo Real</h1>
+  <ul id="product-list"></ul>
+
+  <h2>Agregar un Producto</h2>
+  <form id="add-product-form">
+    <label for="title">Título:</label>
+    <input type="text" id="title" name="title" required><br>
+    <label for="description">Descripción:</label>
+    <textarea id="description" name="description" required></textarea><br>
+    <label for="code">Código:</label>
+    <input type="text" id="code" name="code" required><br>
+    <label for="price">Precio:</label>
+    <input type="number" id="price" name="price" required><br>
+    <label for="status">Estado:</label>
+    <input type="checkbox" id="status" name="status" checked><br>
+    <label for="stock">Stock:</label>
+    <input type="number" id="stock" name="stock" required><br>
+    <label for="category">Categoría:</label>
+    <input type="text" id="category" name="category" required><br>
+    <button type="submit">Agregar Producto</button>
+  </form>
+
+  <h2>Editar Producto</h2>
+  <form id="edit-product-form" style="display: none;">
+    <input type="hidden" id="edit-product-id">
+    <label for="edit-title">Título:</label>
+    <input type="text" id="edit-title" name="edit-title"><br> 
+    <label for="edit-description">Descripción:</label>
+    <textarea id="edit-description" name="edit-description"></textarea><br> 
+    <label for="edit-code">Código:</label>
+    <input type="text" id="edit-code" name="edit-code"><br> 
+    <label for="edit-price">Precio:</label>
+    <input type="number" id="edit-price" name="edit-price"><br> 
+    <label for="edit-status">Estado:</label>
+    <input type="checkbox" id="edit-status" name="edit-status"><br> 
+    <label for="edit-stock">Stock:</label>
+    <input type="number" id="edit-stock" name="edit-stock"><br> 
+    <label for="edit-category">Categoría:</label>
+    <input type="text" id="edit-category" name="edit-category"><br> 
+    <button type="submit">Guardar Cambios</button>
+  </form>
+
+  <script>
+    const productList = document.getElementById('product-list');
+    const addProductForm = document.getElementById('add-product-form');
+    const editProductForm = document.getElementById('edit-product-form');
+
+    const showEditForm = (product) => {
+      document.getElementById('edit-product-id').value = product.id;
+      document.getElementById('edit-title').value = product.title;
+      document.getElementById('edit-description').value = product.description;
+      document.getElementById('edit-code').value = product.code;
+      document.getElementById('edit-price').value = product.price;
+      document.getElementById('edit-status').checked = product.status;
+      document.getElementById('edit-stock').value = product.stock;
+      document.getElementById('edit-category').value = product.category;
+      editProductForm.style.display = 'block';
+    };
+
+    addProductForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const newProduct = {
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        code: document.getElementById('code').value,
+        price: document.getElementById('price').value,
+        status: document.getElementById('status').checked,
+        stock: document.getElementById('stock').value,
+        category: document.getElementById('category').value
+      };
+      socket.emit('addProduct', newProduct);
+      addProductForm.reset();
+    });
+
+    editProductForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const updatedProduct = {
+        id: document.getElementById('edit-product-id').value,
+        title: document.getElementById('edit-title').value,
+        description: document.getElementById('edit-description').value,
+        code: document.getElementById('edit-code').value,
+        price: document.getElementById('edit-price').value,
+        status: document.getElementById('edit-status').checked,
+        stock: document.getElementById('edit-stock').value,
+        category: document.getElementById('edit-category').value
+      };
+      socket.emit('updateProduct', updatedProduct);
+      editProductForm.style.display = 'none';
+      editProductForm.reset();
+    });
+
+    socket.on('products', (products) => {
+      productList.innerHTML = '';
+      products.forEach(product => {
+        const li = document.createElement('li');
+        li.textContent = `${product.title} - $${product.price}`;
+
+        const editButton = document.createElement('button');
+        editButton.textContent = 'Editar';
+        editButton.addEventListener('click', () => showEditForm(product));
+        li.appendChild(editButton);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Eliminar';
+        deleteButton.addEventListener('click', () => {
+          socket.emit('deleteProduct', product.id);
+        });
+        li.appendChild(deleteButton);
+
+        productList.appendChild(li);
+      });
+    });
+  </script>
+</body>
+</html>
