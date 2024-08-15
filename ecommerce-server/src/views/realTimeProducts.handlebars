@@ -34,19 +34,19 @@
   <form id="edit-product-form" style="display: none;">
     <input type="hidden" id="edit-product-id">
     <label for="edit-title">Título:</label>
-    <input type="text" id="edit-title" name="edit-title"><br> 
+    <input type="text" id="edit-title" name="edit-title"><br>
     <label for="edit-description">Descripción:</label>
-    <textarea id="edit-description" name="edit-description"></textarea><br> 
+    <textarea id="edit-description" name="edit-description"></textarea><br>
     <label for="edit-code">Código:</label>
-    <input type="text" id="edit-code" name="edit-code"><br> 
+    <input type="text" id="edit-code" name="edit-code"><br>
     <label for="edit-price">Precio:</label>
-    <input type="number" id="edit-price" name="edit-price"><br> 
+    <input type="number" id="edit-price" name="edit-price"><br>
     <label for="edit-status">Estado:</label>
-    <input type="checkbox" id="edit-status" name="edit-status"><br> 
+    <input type="checkbox" id="edit-status" name="edit-status"><br>
     <label for="edit-stock">Stock:</label>
-    <input type="number" id="edit-stock" name="edit-stock"><br> 
+    <input type="number" id="edit-stock" name="edit-stock"><br>
     <label for="edit-category">Categoría:</label>
-    <input type="text" id="edit-category" name="edit-category"><br> 
+    <input type="text" id="edit-category" name="edit-category"><br>
     <button type="submit">Guardar Cambios</button>
   </form>
 
@@ -56,7 +56,7 @@
     const editProductForm = document.getElementById('edit-product-form');
 
     const showEditForm = (product) => {
-      document.getElementById('edit-product-id').value = product.id;
+      document.getElementById('edit-product-id').value = product._id;
       document.getElementById('edit-title').value = product.title;
       document.getElementById('edit-description').value = product.description;
       document.getElementById('edit-code').value = product.code;
@@ -101,7 +101,7 @@
 
     socket.on('products', (products) => {
       productList.innerHTML = '';
-      products.forEach(product => {
+      products.payload.forEach(product => { // Acceder a products.payload
         const li = document.createElement('li');
         li.textContent = `${product.title} - $${product.price}`;
 
@@ -113,7 +113,7 @@
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Eliminar';
         deleteButton.addEventListener('click', () => {
-          socket.emit('deleteProduct', product.id);
+          socket.emit('deleteProduct', product._id);
         });
         li.appendChild(deleteButton);
 
@@ -123,3 +123,5 @@
   </script>
 </body>
 </html>
+
+

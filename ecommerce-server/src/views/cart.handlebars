@@ -1,0 +1,77 @@
+// ecommerce-server/src/views/cart.handlebars
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrito - {{cartId}}</title>
+</head>
+<body>
+  <h2>Carrito {{cartId}}</h2>
+  <ul id="cart-product-list">
+    {{#each cartProducts}}
+      <li data-product-id="{{this.product._id}}">
+        {{this.product.title}} - 
+        Cantidad: <input type="number" class="quantity-input" min="1" value="{{this.quantity}}"> -
+        Precio unitario: ${{this.product.price}} - 
+        Subtotal: ${{multiply this.quantity this.product.price}} -
+        <button class="delete-product">Eliminar</button>
+      </li>
+    {{/each}}
+  </ul>
+  <script>
+    const cartProductList = document.getElementById('cart-product-list');
+
+    cartProductList.addEventListener('click', async (event) => {
+      const listItem = event.target.closest('li'); 
+
+      if (event.target.classList.contains('delete-product')) {
+        const productId = listItem.dataset.productId;
+        
+        try {
+          const response = await fetch(`/api/carts/${{{cartId}}}/products/${productId}`, { 
+            method: 'DELETE'
+          });
+
+          if (response.ok) {
+            listItem.remove(); 
+          } else {
+            const data = await response.json();
+            alert(`Error: ${data.error}`);
+          }
+        } catch (error) {
+          console.error('Error al eliminar producto del carrito:', error);
+          alert('Error al eliminar producto del carrito');
+        }
+
+      } else if (event.target.classList.contains('quantity-input')) {
+        const productId = listItem.dataset.productId;
+        const newQuantity = event.target.value;
+
+        try {
+          const response = await fetch(`/api/carts/${{{cartId}}}/products/${productId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ quantity: newQuantity })
+          });
+
+          if (response.ok) {
+            
+            listItem.querySelector('.quantity-input').value = newQuantity; 
+            listItem.querySelector('.subtotal').textContent = `Subtotal: $${(newQuantity * parseFloat(listItem.querySelector('.unit-price').textContent.replace('Precio unitario: $', ''))).toFixed(2)}`; 
+          } else {
+            const data = await response.json();
+            alert(`Error: ${data.error}`);
+          }
+        } catch (error) {
+          console.error('Error al actualizar la cantidad del producto:', error);
+          alert('Error al actualizar la cantidad del producto');
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+

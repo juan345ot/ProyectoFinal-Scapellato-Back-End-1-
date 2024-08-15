@@ -1,3 +1,4 @@
+// ecommerce-server/src/views/home.handlebars
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,11 +9,72 @@
 <body>
   <h2>Productos</h2>
   <ul>
-    {{#each products}}
-      <li>{{this.title}} - ${{this.price}}</li>
-    {{/each}}
+  {{#each products}} 
+    <li>
+      <a href="/products/{{this._id}}">{{this.title}} - ${{this.price}}</a>
+      <button class="add-to-cart" data-product-id="{{this._id}}">Agregar al Carrito</button>
+    </li>
+  {{/each}}
   </ul>
+
+  {{#if hasPrevPage}}
+    <a href="?limit={{limit}}&page={{add currentPage -1}}&sort={{sort}}&query={{query}}">Anterior</a> 
+  {{/if}}
+
+  {{#each (range 1 totalPages)}}
+    <a href="?page={{this}}">{{this}}</a> 
+  {{/each}}
+
+  {{#if hasNextPage}}
+    <a href="?limit={{limit}}&page={{add currentPage 1}}&sort={{sort}}&query={{query}}">Siguiente</a> 
+  {{/if}}
+
+  <script>
+    const addToCartButtons = document.querySelectorAll('.add-to-cart');
+    addToCartButtons.forEach(button => {
+      button.addEventListener('click', async (event) => {
+        const productId = event.target.dataset.productId;
+
+        // Obtener el cartId del localStorage
+        let cartId = localStorage.getItem('cartId');
+
+        // Si no existe un carrito, crearlo
+        if (!cartId) {
+          try {
+            const response = await fetch('/api/carts', { method: 'POST' });
+            if (response.ok) {
+              const data = await response.json();
+              cartId = data.payload.cartId;
+              localStorage.setItem('cartId', cartId); // Guardar el nuevo cartId
+            } else {
+              throw new Error('Error al crear el carrito');
+            }
+          } catch (error) {
+            console.error('Error al crear el carrito:', error);
+            alert('Error al crear el carrito');
+            return;
+          }
+        }
+
+        // Agregar el producto al carrito
+        try {
+          const response = await fetch(`/api/carts/${cartId}/product/${productId}`, { 
+            method: 'POST'
+          });
+          
+          if (response.ok) {
+            alert('Producto agregado al carrito');
+          } else {
+            const data = await response.json();
+            alert(`Error: ${data.error}`);
+          }
+        } catch (error) {
+          console.error('Error al agregar al carrito:', error);
+          alert('Error al agregar al carrito');
+        }
+      });
+    });
+  </script>
 </body>
 </html>
-
 
