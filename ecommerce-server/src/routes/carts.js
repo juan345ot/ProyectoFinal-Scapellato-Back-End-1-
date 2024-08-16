@@ -38,7 +38,7 @@ router.post('/:cid/product/:pid', async (req, res) => {
   }
 });
 
-router.delete('/:cid/products/:pid', async (req, res) => {
+router.delete('/:cid/product/:pid', async (req, res) => {
   try {
     const updatedCart = await cartManager.deleteProductFromCart(req.params.cid, req.params.pid);
     res.json({ status: 'success', payload: updatedCart, message: 'Producto eliminado del carrito' });
@@ -56,11 +56,11 @@ router.put('/:cid', async (req, res) => {
   }
 });
 
-router.put('/:cid/products/:pid', async (req, res) => {
+router.put('/:cid/product/:pid', async (req, res) => {
   try {
     const quantity = req.body.quantity;
     const updatedCart = await cartManager.updateProductQuantity(req.params.cid, req.params.pid, quantity);
-    res.json({ status: 'success', payload: updatedCart });
+    res.json({ status: 'success', payload: updatedCart, message: 'Producto modificado' });
   } catch (error) {
     res.status(404).json({ status: 'error', error: error.message });
   }
@@ -75,5 +75,13 @@ router.delete('/:cid', async (req, res) => {
   }
 });
 
-module.exports = router;
+// Middleware para manejar errores y enviar respuestas JSON
+router.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({ 
+    status: 'error', 
+    error: err.message || 'Error interno del servidor' 
+  });
+});
 
+module.exports = router;

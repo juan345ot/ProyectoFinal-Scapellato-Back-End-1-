@@ -1,4 +1,3 @@
-// ecommerce-server/src/views/cart.handlebars
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,13 +7,13 @@
 </head>
 <body>
   <h2>Carrito {{cartId}}</h2>
-  <ul id="cart-product-list">
+  <ul id="cart-product-list" data-cart-id="{{cartId}}">
     {{#each cartProducts}}
       <li data-product-id="{{this.product._id}}">
         {{this.product.title}} - 
         Cantidad: <input type="number" class="quantity-input" min="1" value="{{this.quantity}}"> -
         Precio unitario: ${{this.product.price}} - 
-        Subtotal: ${{multiply this.quantity this.product.price}} -
+        <span class="subtotal">Subtotal: ${{multiply this.quantity this.product.price}}</span> -
         <button class="delete-product">Eliminar</button>
       </li>
     {{/each}}
@@ -25,23 +24,26 @@
     cartProductList.addEventListener('click', async (event) => {
       const listItem = event.target.closest('li'); 
 
+      // Obtener el cartId del atributo de datos del elemento ul
+      const cartId = cartProductList.dataset.cartId; 
+
       if (event.target.classList.contains('delete-product')) {
         const productId = listItem.dataset.productId;
         
         try {
-          const response = await fetch(`/api/carts/${{{cartId}}}/products/${productId}`, { 
+          const response = await fetch(`/api/carts/${cartId}/product/${productId}`, { 
             method: 'DELETE'
           });
 
           if (response.ok) {
             listItem.remove(); 
           } else {
-            const data = await response.json();
-            alert(`Error: ${data.error}`);
+            const data = await response.json(); 
+            alert(`Error: ${data.error}`);     
           }
         } catch (error) {
-          console.error('Error al eliminar producto del carrito:', error);
-          alert('Error al eliminar producto del carrito');
+          console.error('Error al realizar la solicitud:', error);
+          alert('Error al comunicarse con el servidor'); 
         }
 
       } else if (event.target.classList.contains('quantity-input')) {
@@ -49,7 +51,7 @@
         const newQuantity = event.target.value;
 
         try {
-          const response = await fetch(`/api/carts/${{{cartId}}}/products/${productId}`, {
+          const response = await fetch(`/api/carts/${cartId}/product/${productId}`, { 
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json'
@@ -62,16 +64,15 @@
             listItem.querySelector('.quantity-input').value = newQuantity; 
             listItem.querySelector('.subtotal').textContent = `Subtotal: $${(newQuantity * parseFloat(listItem.querySelector('.unit-price').textContent.replace('Precio unitario: $', ''))).toFixed(2)}`; 
           } else {
-            const data = await response.json();
-            alert(`Error: ${data.error}`);
+            const data = await response.json(); 
+            alert(`Error: ${data.error}`);     
           }
         } catch (error) {
-          console.error('Error al actualizar la cantidad del producto:', error);
-          alert('Error al actualizar la cantidad del producto');
+          console.error('Error al realizar la solicitud:', error);
+          alert('Error al comunicarse con el servidor'); 
         }
       }
     });
   </script>
 </body>
 </html>
-

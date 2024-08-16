@@ -63,7 +63,7 @@ router.get('/carts/:cid', async (req, res) => {
   try {
     const cartId = req.params.cid;
     const cartProducts = await cartManager.getCartById(cartId);
-    res.render('cart', { cartId, cartProducts });
+    res.render('cart', { cartId: cartId, cartProducts });
   } catch (error) {
     console.error(error);
     res.status(404).send('Carrito no encontrado');
