@@ -1,7 +1,6 @@
-// ecommerce-server/src/app.js
 const express = require('express');
 const app = express();
-const hbs = require('./helpers'); // Importar la configuración de Handlebars con helpers
+const hbs = require('./helpers'); // Configuración de Handlebars con helpers
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 const productsRouter = require('./routes/products');
@@ -15,7 +14,7 @@ require('dotenv').config();
 const cartManager = new CartManager();
 const productManager = new ProductManager();
 
-app.engine('handlebars', hbs.engine); // Usar el motor de Handlebars con helpers
+app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', __dirname + '/views');
 
@@ -27,6 +26,11 @@ app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
 app.use('/', viewsRouter);
 
+const handleSocketError = (socket, error, message) => {
+  console.error(message, error);
+  socket.emit('error', message);
+};
+
 io.on('connection', (socket) => {
   console.log('Cliente conectado');
 
@@ -35,55 +39,39 @@ io.on('connection', (socket) => {
       const products = await productManager.getProducts();
       socket.emit('products', products);
     } catch (error) {
-      console.error('Error al obtener productos para Socket.IO:', error);
-      socket.emit('error', 'Error al obtener productos');
+      handleSocketError(socket, error, 'Error al obtener productos');
     }
   };
 
   sendProducts();
 
-  socket.on('addProduct', async (newProduct) => {
+  const handleProductOperation = async (operation, args, successMessage) => {
     try {
-      await productManager.addProduct(newProduct);
+      await operation(...args);
       sendProducts();
+      console.log(successMessage);
     } catch (error) {
-      console.error('Error al agregar producto desde Socket.IO:', error);
-      socket.emit('error', 'Error al agregar producto');
+      handleSocketError(socket, error, `Error al ${successMessage.toLowerCase()}`);
     }
-  });
+  };
 
-  socket.on('deleteProduct', async (pid) => {
-    try {
-      await productManager.deleteProduct(pid);
-      sendProducts();
-    } catch (error) {
-      console.error('Error al eliminar producto desde Socket.IO:', error);
-      socket.emit('error', 'Error al eliminar producto');
-    }
-  });
-
-  socket.on('updateProduct', async (updatedProduct) => {
-    try {
-      await productManager.updateProduct(updatedProduct.id, updatedProduct);
-      sendProducts();
-    } catch (error) {
-      console.error('Error al actualizar producto desde Socket.IO:', error);
-      socket.emit('error', 'Error al actualizar producto');
-    }
-  });
+  socket.on('addProduct', (newProduct) => handleProductOperation(productManager.addProduct.bind(productManager), [newProduct], 'Producto agregado'));
+  socket.on('deleteProduct', (pid) => handleProductOperation(productManager.deleteProduct.bind(productManager), [pid], 'Producto eliminado'));
+  socket.on('updateProduct', (updatedProduct) => handleProductOperation(productManager.updateProduct.bind(productManager), [updatedProduct.id, updatedProduct], 'Producto actualizado'));
 });
 
-const PORT = 8080;
-
-(async () => {
+const startServer = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('Conexión exitosa a MongoDB');
 
+    const PORT = 8080;
     http.listen(PORT, () => {
       console.log(`Servidor corriendo en el puerto ${PORT}`);
     });
   } catch (error) {
     console.error('Error al conectar a MongoDB:', error);
   }
-})();
+};
+
+startServer();

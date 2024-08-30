@@ -57,13 +57,21 @@ class CartManager {
 
   async deleteProductFromCart(cid, pid) {
     try {
-      const cart = await Cart.findById(cid);
+      const cart = await Cart.findById(cid); 
       if (!cart) {
         throw new Error('Carrito no encontrado');
       }
-      cart.products = cart.products.filter(p => p.product.toString() !== pid); 
-      await cart.save();
-      return cart;
+
+      // Encuentra el producto en el array 'products' del carrito
+      const productToDeleteIndex = cart.products.findIndex(p => p.product.toString() === pid); 
+      // Revisa si se encontró el producto
+      if (productToDeleteIndex === -1) {
+        throw new Error('Producto no encontrado en el carrito');
+      }
+
+      cart.products.splice(productToDeleteIndex, 1); // Elimina el producto del array
+      await cart.save(); // Guarda los cambios en el
+            return cart;
     } catch (error) {
       throw new Error('Error al eliminar el producto del carrito: ' + error.message);
     }
@@ -85,19 +93,20 @@ class CartManager {
 
   async updateProductQuantity(cid, pid, quantity) {
     try {
-      const cart = await Cart.findById(cid);
+      const cart = await Cart.findById(cid); // Obtener el carrito
       if (!cart) {
         throw new Error('Carrito no encontrado');
       }
 
-      const productToUpdate = cart.products.find(p => p.product.toString() === pid);
-
-      if (!productToUpdate) {
+      // Encuentra el producto en el array 'products' del carrito
+      const productToUpdateIndex = cart.products.findIndex(p => p.product.toString() === pid); 
+      // Revisa si se encontró el producto
+      if (productToUpdateIndex === -1) {
         throw new Error('Producto no encontrado en el carrito');
       }
 
-      productToUpdate.quantity = quantity;
-      await cart.save();
+      cart.products[productToUpdateIndex].quantity = quantity; // Actualiza la cantidad
+      await cart.save(); // Guarda los cambios en el carrito
       return cart;
     } catch (error) {
       throw new Error('Error al actualizar la cantidad del producto en el carrito: ' + error.message);

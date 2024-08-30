@@ -19,4 +19,3 @@ socket.on('error', (errorMessage) => {
   console.error('Error del servidor:', errorMessage);
   alert('Ocurrió un error en el servidor. Por favor, inténtalo de nuevo más tarde.');
 });
-

@@ -1,4 +1,3 @@
-// ecommerce-server/src/routes/carts.js
 const express = require('express');
 const router = express.Router();
 const CartManager = require('../managers/CartManager');
@@ -8,7 +7,6 @@ const cartManager = new CartManager();
 router.post('/', async (req, res) => {
   try {
     const newCart = await cartManager.createCart();
-    // Envía el ID del carrito en la respuesta
     res.status(201).json({
       status: 'success',
       payload: {
@@ -22,8 +20,10 @@ router.post('/', async (req, res) => {
 
 router.get('/:cid', async (req, res) => {
   try {
-    const products = await cartManager.getCartById(req.params.cid);
-    res.json({ status: 'success', payload: products });
+    const cartId = req.params.cid; // Obtiene el cartId de la URL
+    const cartProducts = await cartManager.getCartById(cartId); 
+    console.log("El cartId recibido es:", cartId); // Imprime el cartId
+    res.render('cart', { cartId: cartId, cartProducts }); // Asegúrate de usar cartId
   } catch (error) {
     res.status(404).json({ status: 'error', error: error.message });
   }
@@ -38,12 +38,14 @@ router.post('/:cid/product/:pid', async (req, res) => {
   }
 });
 
-router.delete('/:cid/product/:pid', async (req, res) => {
+router.delete('/:cid/product/:pid', async (req, res, next) => { // Se agregó next 
   try {
-    const updatedCart = await cartManager.deleteProductFromCart(req.params.cid, req.params.pid);
+    const cartId = req.params.cid; // Obtiene el cartId de la URL
+    const productId = req.params.pid; // Obtiene el productId de la URL
+    const updatedCart = await cartManager.deleteProductFromCart(cartId, productId);
     res.json({ status: 'success', payload: updatedCart, message: 'Producto eliminado del carrito' });
   } catch (error) {
-    res.status(404).json({ status: 'error', error: error.message });
+    next(error); // Propaga el error al siguiente middleware
   }
 });
 
@@ -56,13 +58,15 @@ router.put('/:cid', async (req, res) => {
   }
 });
 
-router.put('/:cid/product/:pid', async (req, res) => {
+router.put('/:cid/product/:pid', async (req, res, next) => { // Se agregó next
   try {
     const quantity = req.body.quantity;
-    const updatedCart = await cartManager.updateProductQuantity(req.params.cid, req.params.pid, quantity);
+    const cartId = req.params.cid; // Obtiene el cartId de la URL
+    const productId = req.params.pid; // Obtiene el productId de la URL
+    const updatedCart = await cartManager.updateProductQuantity(cartId, productId, quantity);
     res.json({ status: 'success', payload: updatedCart, message: 'Producto modificado' });
   } catch (error) {
-    res.status(404).json({ status: 'error', error: error.message });
+    next(error); // Propaga el error al siguiente middleware
   }
 });
 

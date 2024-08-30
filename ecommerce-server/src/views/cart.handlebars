@@ -9,12 +9,12 @@
   <h2>Carrito {{cartId}}</h2>
   <ul id="cart-product-list" data-cart-id="{{cartId}}">
     {{#each cartProducts}}
-      <li data-product-id="{{this.product._id}}">
+      <li data-product-id="{{this.product._id}}">  
         {{this.product.title}} - 
         Cantidad: <input type="number" class="quantity-input" min="1" value="{{this.quantity}}"> -
         Precio unitario: ${{this.product.price}} - 
         <span class="subtotal">Subtotal: ${{multiply this.quantity this.product.price}}</span> -
-        <button class="delete-product">Eliminar</button>
+        <button class="delete-product" data-product-id="{{this.product._id}}">Eliminar</button>
       </li>
     {{/each}}
   </ul>
@@ -23,23 +23,25 @@
 
     cartProductList.addEventListener('click', async (event) => {
       const listItem = event.target.closest('li'); 
-
-      // Obtener el cartId del atributo de datos del elemento ul
-      const cartId = cartProductList.dataset.cartId; 
+      const productId = listItem.dataset.productId; 
+      const cartId = cartProductList.dataset.cartId; // Asegúrate de que cartId está definido correctamente
 
       if (event.target.classList.contains('delete-product')) {
-        const productId = listItem.dataset.productId;
-        
         try {
-          const response = await fetch(`/api/carts/${cartId}/product/${productId}`, { 
+          const response = await fetch(`/api/carts/${cartId}/product/${productId}`, { // Aquí se usa cartId 
             method: 'DELETE'
           });
 
           if (response.ok) {
-            listItem.remove(); 
+            const data = await response.json(); // Procesa la respuesta JSON
+            if (data.status === 'success') { // Verifica el estado en la respuesta
+              listItem.remove(); 
+            } else {
+              alert(`Error: ${data.error}`); 
+            }
           } else {
-            const data = await response.json(); 
-            alert(`Error: ${data.error}`);     
+            const data = await response.json(); // Procesa la respuesta JSON
+            alert(`Error: ${data.error}`); 
           }
         } catch (error) {
           console.error('Error al realizar la solicitud:', error);
@@ -47,11 +49,10 @@
         }
 
       } else if (event.target.classList.contains('quantity-input')) {
-        const productId = listItem.dataset.productId;
         const newQuantity = event.target.value;
 
         try {
-          const response = await fetch(`/api/carts/${cartId}/product/${productId}`, { 
+          const response = await fetch(`/api/carts/${cartId}/product/${productId}`, { // Aquí se usa cartId
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json'
@@ -60,12 +61,16 @@
           });
 
           if (response.ok) {
-            
-            listItem.querySelector('.quantity-input').value = newQuantity; 
-            listItem.querySelector('.subtotal').textContent = `Subtotal: $${(newQuantity * parseFloat(listItem.querySelector('.unit-price').textContent.replace('Precio unitario: $', ''))).toFixed(2)}`; 
+            const data = await response.json(); // Procesa la respuesta JSON
+            if (data.status === 'success') { // Verifica el estado en la respuesta
+              listItem.querySelector('.quantity-input').value = newQuantity; 
+              listItem.querySelector('.subtotal').textContent = `Subtotal: $${(newQuantity * parseFloat(listItem.querySelector('.unit-price').textContent.replace('Precio unitario: $', ''))).toFixed(2)}`; 
+            } else {
+              alert(`Error: ${data.error}`); 
+            }
           } else {
-            const data = await response.json(); 
-            alert(`Error: ${data.error}`);     
+            const data = await response.json(); // Procesa la respuesta JSON
+            alert(`Error: ${data.error}`); 
           }
         } catch (error) {
           console.error('Error al realizar la solicitud:', error);
@@ -76,3 +81,4 @@
   </script>
 </body>
 </html>
+
