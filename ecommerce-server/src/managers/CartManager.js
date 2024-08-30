@@ -39,8 +39,10 @@ class CartManager {
       const existingProduct = cart.products.find(p => p.product.toString() === pid); 
 
       if (existingProduct) {
+        // Si el producto ya existe, solo incrementa la cantidad
         existingProduct.quantity += 1;
       } else {
+        // Si el producto no existe, agrégalo al carrito
         const product = await Product.findById(pid); 
         if (!product) {
           throw new Error('Producto no encontrado'); 

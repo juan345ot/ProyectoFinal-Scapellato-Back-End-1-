@@ -12,35 +12,41 @@
       <li data-product-id="{{this.product._id}}">  
         {{this.product.title}} - 
         Cantidad: <input type="number" class="quantity-input" min="1" value="{{this.quantity}}"> -
-        Precio unitario: ${{this.product.price}} - 
+        <span class="unit-price">Precio unitario: ${{this.product.price}}</span> - 
         <span class="subtotal">Subtotal: ${{multiply this.quantity this.product.price}}</span> -
         <button class="delete-product" data-product-id="{{this.product._id}}">Eliminar</button>
       </li>
     {{/each}}
   </ul>
+
+  <button id="empty-cart-button" data-cart-id="{{cartId}}">Vaciar Carrito</button>
+  <a href="/">Volver al Home</a> 
+
   <script>
     const cartProductList = document.getElementById('cart-product-list');
+    const emptyCartButton = document.getElementById('empty-cart-button');
 
     cartProductList.addEventListener('click', async (event) => {
       const listItem = event.target.closest('li'); 
       const productId = listItem.dataset.productId; 
-      const cartId = cartProductList.dataset.cartId; // Asegúrate de que cartId está definido correctamente
+      const cartId = cartProductList.dataset.cartId;
 
       if (event.target.classList.contains('delete-product')) {
         try {
-          const response = await fetch(`/api/carts/${cartId}/product/${productId}`, { // Aquí se usa cartId 
+          const response = await fetch(`/api/carts/${cartId}/product/${productId}`, { 
             method: 'DELETE'
           });
 
           if (response.ok) {
-            const data = await response.json(); // Procesa la respuesta JSON
-            if (data.status === 'success') { // Verifica el estado en la respuesta
+            const data = await response.json();
+            if (data.status === 'success') {
               listItem.remove(); 
+              alert('Producto eliminado del carrito'); 
             } else {
               alert(`Error: ${data.error}`); 
             }
           } else {
-            const data = await response.json(); // Procesa la respuesta JSON
+            const data = await response.json();
             alert(`Error: ${data.error}`); 
           }
         } catch (error) {
@@ -49,33 +55,61 @@
         }
 
       } else if (event.target.classList.contains('quantity-input')) {
-        const newQuantity = event.target.value;
+        const newQuantity = parseInt(event.target.value);
 
         try {
-          const response = await fetch(`/api/carts/${cartId}/product/${productId}`, { // Aquí se usa cartId
+          const response = await fetch(`/api/carts/${cartId}/product/${productId}`, { 
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ quantity: newQuantity })
+            body: JSON.stringify({ quantity: newQuantity }) 
           });
 
           if (response.ok) {
-            const data = await response.json(); // Procesa la respuesta JSON
-            if (data.status === 'success') { // Verifica el estado en la respuesta
+            const data = await response.json(); 
+            if (data.status === 'success') { 
               listItem.querySelector('.quantity-input').value = newQuantity; 
               listItem.querySelector('.subtotal').textContent = `Subtotal: $${(newQuantity * parseFloat(listItem.querySelector('.unit-price').textContent.replace('Precio unitario: $', ''))).toFixed(2)}`; 
+              alert('Cantidad actualizada'); 
             } else {
               alert(`Error: ${data.error}`); 
             }
           } else {
-            const data = await response.json(); // Procesa la respuesta JSON
+            const data = await response.json();
             alert(`Error: ${data.error}`); 
           }
         } catch (error) {
           console.error('Error al realizar la solicitud:', error);
           alert('Error al comunicarse con el servidor'); 
         }
+      }
+    });
+
+    emptyCartButton.addEventListener('click', async () => {
+      const cartId = emptyCartButton.dataset.cartId;
+      try {
+        const response = await fetch(`/api/carts/${cartId}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === 'success') {
+            alert('Carrito vaciado');
+            cartProductList.innerHTML = ''; 
+            localStorage.removeItem('cartId'); 
+            window.location.href = '/'; 
+          } else {
+            alert(`Error: ${data.error}`);
+         }
+        } else {
+          const data = await response.json();
+          alert(`Error: ${data.error}`);
+        }
+      } catch (error) {
+        console.error('Error al realizar la solicitud:', error);
+        alert('Error al comunicarse con el servidor');
       }
     });
   </script>

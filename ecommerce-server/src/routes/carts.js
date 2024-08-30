@@ -38,14 +38,14 @@ router.post('/:cid/product/:pid', async (req, res) => {
   }
 });
 
-router.delete('/:cid/product/:pid', async (req, res, next) => { // Se agregó next 
+router.delete('/:cid/product/:pid', async (req, res, next) => { 
   try {
-    const cartId = req.params.cid; // Obtiene el cartId de la URL
-    const productId = req.params.pid; // Obtiene el productId de la URL
+    const cartId = req.params.cid;
+    const productId = req.params.pid
     const updatedCart = await cartManager.deleteProductFromCart(cartId, productId);
-    res.json({ status: 'success', payload: updatedCart, message: 'Producto eliminado del carrito' });
+    res.json({ status: 'success', payload: updatedCart, message: 'Producto eliminado del carrito' }); // Respuesta JSON
   } catch (error) {
-    next(error); // Propaga el error al siguiente middleware
+    next(error); 
   }
 });
 
@@ -58,15 +58,15 @@ router.put('/:cid', async (req, res) => {
   }
 });
 
-router.put('/:cid/product/:pid', async (req, res, next) => { // Se agregó next
+router.put('/:cid/product/:pid', async (req, res, next) => { 
   try {
     const quantity = req.body.quantity;
-    const cartId = req.params.cid; // Obtiene el cartId de la URL
-    const productId = req.params.pid; // Obtiene el productId de la URL
+    const cartId = req.params.cid;
+    const productId = req.params.pid;
     const updatedCart = await cartManager.updateProductQuantity(cartId, productId, quantity);
-    res.json({ status: 'success', payload: updatedCart, message: 'Producto modificado' });
+    res.json({ status: 'success', payload: updatedCart, message: 'Producto modificado' }); // Respuesta JSON
   } catch (error) {
-    next(error); // Propaga el error al siguiente middleware
+    next(error); 
   }
 });
 
