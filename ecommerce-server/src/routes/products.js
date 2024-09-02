@@ -1,11 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const ProductManager = require('../managers/ProductManager');
-const { body, validationResult, param } = require('express-validator'); // Importa 'param'
-
+const { body, validationResult, param } = require('express-validator');
 const productManager = new ProductManager();
 
-// Reglas de validación para el POST /api/products
 const productValidationRules = [
   body('title').notEmpty().withMessage('El título es obligatorio'),
   body('description').notEmpty().withMessage('La descripción es obligatoria'),
@@ -20,7 +18,6 @@ const productValidationRules = [
   body('category').notEmpty().withMessage('La categoría es obligatoria')
 ];
 
-// POST /api/products
 router.post('/', productValidationRules, async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -38,12 +35,10 @@ router.post('/', productValidationRules, async (req, res) => {
   }
 });
 
-// GET /api/products/:pid
 router.get('/:pid', 
   param('pid').isMongoId().withMessage('El ID del producto no es válido'), 
   async (req, res) => {
   try {
-    // Validar el ID del producto
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -59,13 +54,11 @@ router.get('/:pid',
   }
 });
 
-// PUT /api/products/:pid
 router.put('/:pid', 
   param('pid').isMongoId().withMessage('El ID del producto no es válido'), 
   productValidationRules,
   async (req, res) => {
     try {
-      // Validar el ID del producto y los datos del producto
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -82,12 +75,10 @@ router.put('/:pid',
   }
 );
 
-// DELETE /api/products/:pid
 router.delete('/:pid', 
   param('pid').isMongoId().withMessage('El ID del producto no es válido'), 
   async (req, res) => {
   try {
-    // Validar el ID del producto
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({

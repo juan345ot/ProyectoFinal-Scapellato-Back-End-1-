@@ -1,5 +1,3 @@
-// ecommerce-server/src/public/js/cart.js
-
 const cartProductList = document.getElementById('cart-product-list');
 const emptyCartButton = document.getElementById('empty-cart-button');
 const cartTotalContainer = document.getElementById('cart-total-container'); 
@@ -93,7 +91,6 @@ emptyCartButton.addEventListener('click', async () => {
   }
 });
 
-// Función para actualizar el total del carrito
 const updateCartTotal = () => {
   const cartProducts = cartProductList.querySelectorAll('li');
   let total = 0;
@@ -113,6 +110,5 @@ const updateCartTotal = () => {
   }
 };
 
-// Actualiza el total del carrito al cargar la página
 updateCartTotal(); 
 

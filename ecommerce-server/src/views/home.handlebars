@@ -20,19 +20,27 @@
     {{/each}}
   </ul>
 
-  <div class="pagination">
-    {{#if hasPrevPage}}
-      <a href="?limit={{limit}}&page={{add currentPage -1}}&sort={{sort}}&query={{query}}" class="pagination-button">Anterior</a> 
-    {{/if}}
+<div class="pagination">
+  {{#if hasPrevPage}}
+    <a href="{{prevLink}}" class="pagination-button">Anterior</a> 
+  {{/if}}
 
-    {{#each (range 1 totalPages)}}
-      <a href="?page={{this}}" class="pagination-button">{{this}}</a> 
-    {{/each}}
+  {{#each (range 1 totalPages currentPage)}} 
+    <a href="?limit={{../limit}}&page={{this.page}}&sort={{../sort}}&query={{../query}}" class="pagination-button {{#if this.isCurrentPage}}active{{/if}}">{{this.page}}</a> 
+  {{/each}}
 
-    {{#if hasNextPage}}
-      <a href="?limit={{limit}}&page={{add currentPage 1}}&sort={{sort}}&query={{query}}" class="pagination-button">Siguiente</a> 
-    {{/if}}
-  </div>
+  {{#if hasNextPage}}
+    <a href="{{nextLink}}" class="pagination-button">Siguiente</a> 
+  {{/if}}
+
+  {{#unless hasPrevPage}}
+    {{#unless hasNextPage}}
+      {{#if (gt totalPages 1)}}
+        <span>Página {{currentPage}} de {{totalPages}}</span>
+      {{/if}}
+    {{/unless}}
+  {{/unless}}
+</div>
 
   <br>
   <div id="cart-link-container"></div> 

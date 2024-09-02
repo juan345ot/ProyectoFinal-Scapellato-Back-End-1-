@@ -1,5 +1,3 @@
-// ecommerce-server/src/public/js/home.js
-
 const addToCartButtons = document.querySelectorAll('.add-to-cart');
 addToCartButtons.forEach(button => {
   button.addEventListener('click', async (event) => {
@@ -58,9 +56,6 @@ const updateCartLink = (cartId) => {
     cartLink.href = `/carts/${cartId}`;
     cartLink.textContent = 'Ver Carrito';
     cartLinkContainer.appendChild(cartLink);
-  
-// ecommerce-server/src/public/js/home.js (continuation)
-
   } else {
     cartLinkContainer.textContent = 'Carrito vacío';
   }

@@ -86,7 +86,7 @@ button:hover {
   border-radius: 4px;
   box-sizing: border-box;
 }
-/* Estilos para la paginación en home.handlebars */
+
 .pagination {
   display: flex;
   justify-content: center;
@@ -108,7 +108,6 @@ button:hover {
   background-color: #0069d9;
 }
 
-/* Estilos para el botón "Ver Carrito" en home.handlebars y product.handlebars */
 #cart-link-container a {
   display: inline-block;
   background-color: #007bff;
@@ -125,7 +124,6 @@ button:hover {
   background-color: #0069d9;
 }
 
-/* Estilos para el botón "Volver al Home" en product.handlebars */
 .back-to-home {
   display: block;
   margin-top: 20px;

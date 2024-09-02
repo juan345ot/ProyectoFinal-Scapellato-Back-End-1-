@@ -1,11 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const CartManager = require('../managers/CartManager');
-const { body, validationResult, param } = require('express-validator'); // Importa 'param'
-
+const { body, validationResult, param } = require('express-validator'); 
 const cartManager = new CartManager();
 
-// POST /api/carts
 router.post('/', async (req, res) => {
   try {
     const newCart = await cartManager.createCart();
@@ -20,12 +18,10 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET /api/carts/:cid
 router.get('/:cid',
   param('cid').isMongoId().withMessage('El ID del carrito no es válido'),
   async (req, res) => {
     try {
-      // Validar el ID del carrito
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -43,14 +39,12 @@ router.get('/:cid',
   }
 );
 
-// POST /api/carts/:cid/product/:pid
 router.post('/:cid/product/:pid',
   param('cid').isMongoId().withMessage('El ID del carrito no es válido'),
   param('pid').isMongoId().withMessage('El ID del producto no es válido'),
   body('quantity').isNumeric().withMessage('La cantidad debe ser un número').isInt({ min: 1 }).withMessage('La cantidad debe ser un entero mayor o igual a 1'),
   async (req, res) => {
     try {
-      // Validar el ID del carrito, el ID del producto y la cantidad
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -70,13 +64,11 @@ router.post('/:cid/product/:pid',
   }
 );
 
-// DELETE /api/carts/:cid/product/:pid
 router.delete('/:cid/product/:pid',
   param('cid').isMongoId().withMessage('El ID del carrito no es válido'),
   param('pid').isMongoId().withMessage('El ID del producto no es válido'),
   async (req, res, next) => {
     try {
-      // Validar el ID del carrito y el ID del producto
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -95,7 +87,6 @@ router.delete('/:cid/product/:pid',
   }
 );
 
-// PUT /api/carts/:cid
 router.put('/:cid',
   param('cid').isMongoId().withMessage('El ID del carrito no es válido'),
   body('products').isArray().withMessage('El campo "products" debe ser un array').custom((value) => {
@@ -112,7 +103,6 @@ router.put('/:cid',
   }),
   async (req, res) => {
     try {
-      // Validar el ID del carrito y el formato del array de productos
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -130,14 +120,12 @@ router.put('/:cid',
   }
 );
 
-// PUT /api/carts/:cid/product/:pid
 router.put('/:cid/product/:pid',
   param('cid').isMongoId().withMessage('El ID del carrito no es válido'),
   param('pid').isMongoId().withMessage('El ID del producto no es válido'),
   body('quantity').isNumeric().withMessage('La cantidad debe ser un número').isInt({ min: 1 }).withMessage('La cantidad debe ser un entero mayor o igual a 1'),
   async (req, res, next) => {
     try {
-      // Validar el ID del carrito, el ID del producto y la cantidad
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -157,12 +145,10 @@ router.put('/:cid/product/:pid',
   }
 );
 
-// DELETE /api/carts/:cid
 router.delete('/:cid',
   param('cid').isMongoId().withMessage('El ID del carrito no es válido'),
   async (req, res) => {
     try {
-      // Validar el ID del carrito
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -180,7 +166,6 @@ router.delete('/:cid',
   }
 );
 
-// Middleware para manejar errores y enviar respuestas JSON
 router.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({

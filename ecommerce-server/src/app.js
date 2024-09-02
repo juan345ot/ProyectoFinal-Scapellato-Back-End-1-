@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const hbs = require('./helpers'); // Configuración de Handlebars con helpers
+const hbs = require('./helpers');
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 const productsRouter = require('./routes/products');
@@ -34,22 +34,21 @@ const handleSocketError = (socket, error, message) => {
 io.on('connection', (socket) => {
   console.log('Cliente conectado');
 
-  // Updated sendProducts function to handle limit
-  const sendProducts = async (limit = null) => { // Default limit to null
+  const sendProducts = async (limit = null) => { 
     try {
-      const products = await productManager.getProducts(limit); // Pass limit to getProducts
+      const products = await productManager.getProducts(limit); 
       socket.emit('products', products);
     } catch (error) {
       handleSocketError(socket, error, 'Error al obtener productos');
     }
   };
 
-  sendProducts(); // Initially send all products
+  sendProducts(); 
 
   const handleProductOperation = async (operation, args, successMessage) => {
     try {
       await operation(...args);
-      sendProducts(); // Re-send all products after an operation
+      sendProducts(); 
       console.log(successMessage);
     } catch (error) {
       handleSocketError(socket, error, `Error al ${successMessage.toLowerCase()}`);

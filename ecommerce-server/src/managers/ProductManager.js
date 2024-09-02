@@ -1,37 +1,48 @@
-// ecommerce-server/src/managers/ProductManager.js
 const Product = require('../models/Product');
 
 class ProductManager {
   constructor() {
-    // No se necesita el path ya que se usa MongoDB
   }
 
   async getProducts(limit = 10, page = 1, sort, query) {
     try {
-      const filter = {};
-
+      const pipeline = [];
+      
       if (query) {
         if (query.includes('category:')) {
-          filter.category = query.replace('category:', '');
+          pipeline.push({ $match: { category: query.replace('category:', '') } });
         } else if (query.includes('availability:')) {
-          filter.status = query.replace('availability:', '') === 'true';
+          pipeline.push({ $match: { status: query.replace('availability:', '') === 'true' } });
         } else {
-          filter.$or = [
-            { title: { $regex: query, $options: 'i' } },
-            { description: { $regex: query, $options: 'i' } }
-          ];
+          pipeline.push({
+            $match: {
+              $or: [
+                { title: { $regex: query, $options: 'i' } },
+                { description: { $regex: query, $options: 'i' } }
+              ]
+            }
+          });
         }
       }
+      
+      if (sort) {
+        pipeline.push({ $sort: { price: sort === 'asc' ? 1 : -1 } });
+      }
+  
+      if (limit) {
+        pipeline.push({ $skip: (parseInt(page) - 1) * parseInt(limit) });
+        pipeline.push({ $limit: parseInt(limit) });
+      }
 
-      const options = {
-        limit: limit !== null ? parseInt(limit) : undefined, // Si limit no es null, lo usa. De lo contrario, undefined (sin límite)
-        skip: (parseInt(page) - 1) * (limit !== null ? parseInt(limit) : 1), // Ajusta el skip si no hay límite
-        sort: sort ? { price: sort === 'asc' ? 1 : -1 } : undefined
-      };
+      if (pipeline.length === 0) {
+        pipeline.push({ $match: {} }); 
+      }
+  
+      const products = await Product.aggregate(pipeline);
+  
 
-      const products = await Product.find(filter, null, options);
-      const totalProducts = await Product.countDocuments(filter);
-
+      const totalProducts = await Product.countDocuments(pipeline.length > 0 ? pipeline[0]['$match'] : {});
+  
       const totalPages = Math.ceil(totalProducts / limit);
       const hasPrevPage = page > 1;
       const hasNextPage = page < totalPages;
@@ -43,7 +54,7 @@ class ProductManager {
       const nextLink = hasNextPage
         ? `/?limit=${limit}&page=${nextPage}&sort=${sort || ''}&query=${query || ''}`
         : null;
-
+  
       return {
         status: 'success',
         payload: products,
@@ -56,7 +67,7 @@ class ProductManager {
         prevLink,
         nextLink
       };
-
+  
     } catch (error) {
       throw new Error('Error al obtener los productos: ' + error.message);
     }

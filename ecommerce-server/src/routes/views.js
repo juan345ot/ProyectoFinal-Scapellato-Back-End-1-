@@ -8,28 +8,28 @@ const cartManager = new CartManager();
 
 router.get('/', async (req, res) => {
   try {
-    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
-    const page = req.query.page ? parseInt(req.query.page) : 1;
-    const sort = req.query.sort;
-    const query = req.query.query;
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10; 
+    const page = req.query.page ? parseInt(req.query.page) : 1; 
+    const sort = req.query.sort || 'asc'; 
+    const query = req.query.query || ''; 
 
     const { 
       payload: products, 
       totalPages, 
       hasPrevPage, 
       hasNextPage,
-      page: currentPage // Renombra "page" a "currentPage" para evitar conflictos
+      page: currentPage,
     } = await productManager.getProducts(limit, page, sort, query);
 
     res.render('home', { 
-      products: products, 
-      totalPages: totalPages, 
-      hasPrevPage: hasPrevPage, 
-      hasNextPage: hasNextPage,
-      currentPage: currentPage,
-      limit: limit, // Pasa "limit" al template
-      sort: sort,   // Pasa "sort" al template
-      query: query  // Pasa "query" al template 
+      products,
+      totalPages,
+      hasPrevPage, 
+      hasNextPage,
+      currentPage,
+      limit, 
+      sort, 
+      query 
     });
 
   } catch (error) {
@@ -42,7 +42,7 @@ router.get('/realtimeproducts', async (req, res) => {
   try {
     const { 
       payload: products 
-    } = await productManager.getProducts(null); // Pasa 'null' como límite para obtener todos los productos
+    } = await productManager.getProducts(null); 
     res.render('realTimeProducts', { products });
   } catch (error) {
     console.error(error);
@@ -50,14 +50,18 @@ router.get('/realtimeproducts', async (req, res) => {
   }
 });
 
-// Ruta para la vista individual del producto
 router.get('/products/:pid', async (req, res) => {
   try {
     const productId = req.params.pid;
     const product = await productManager.getProductById(productId);
 
+    const limit = req.query.limit || 10;
+    const page = req.query.page || 1;
+    const sort = req.query.sort || 'asc';
+    const query = req.query.query || '';
+
     if (product) {
-      res.render('product', { product });
+      res.render('product', { product, limit, page, sort, query }); 
     } else {
       res.status(404).send('Producto no encontrado');
     }
@@ -71,7 +75,20 @@ router.get('/carts/:cid', async (req, res) => {
   try {
     const cartId = req.params.cid;
     const cartProducts = await cartManager.getCartById(cartId);
-    res.render('cart', { cartId: cartId, cartProducts });
+
+    const limit = req.query.limit || 10;
+    const page = req.query.page || 1;
+    const sort = req.query.sort || 'asc';
+    const query = req.query.query || '';
+
+    res.render('cart', { 
+      cartId: cartId, 
+      cartProducts,
+      limit,
+      page,
+      sort,
+      query
+    });
   } catch (error) {
     console.error(error);
     res.status(404).send('Carrito no encontrado');
