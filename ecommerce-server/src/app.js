@@ -34,21 +34,22 @@ const handleSocketError = (socket, error, message) => {
 io.on('connection', (socket) => {
   console.log('Cliente conectado');
 
-  const sendProducts = async () => {
+  // Updated sendProducts function to handle limit
+  const sendProducts = async (limit = null) => { // Default limit to null
     try {
-      const products = await productManager.getProducts();
+      const products = await productManager.getProducts(limit); // Pass limit to getProducts
       socket.emit('products', products);
     } catch (error) {
       handleSocketError(socket, error, 'Error al obtener productos');
     }
   };
 
-  sendProducts();
+  sendProducts(); // Initially send all products
 
   const handleProductOperation = async (operation, args, successMessage) => {
     try {
       await operation(...args);
-      sendProducts();
+      sendProducts(); // Re-send all products after an operation
       console.log(successMessage);
     } catch (error) {
       handleSocketError(socket, error, `Error al ${successMessage.toLowerCase()}`);

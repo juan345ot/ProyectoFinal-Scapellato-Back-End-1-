@@ -38,8 +38,16 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.get('/realtimeproducts', (req, res) => {
-  res.render('realTimeProducts');
+router.get('/realtimeproducts', async (req, res) => {
+  try {
+    const { 
+      payload: products 
+    } = await productManager.getProducts(null); // Pasa 'null' como límite para obtener todos los productos
+    res.render('realTimeProducts', { products });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error interno del servidor');
+  }
 });
 
 // Ruta para la vista individual del producto

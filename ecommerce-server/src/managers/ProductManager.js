@@ -24,8 +24,8 @@ class ProductManager {
       }
 
       const options = {
-        limit: parseInt(limit),
-        skip: (parseInt(page) - 1) * parseInt(limit),
+        limit: limit !== null ? parseInt(limit) : undefined, // Si limit no es null, lo usa. De lo contrario, undefined (sin límite)
+        skip: (parseInt(page) - 1) * (limit !== null ? parseInt(limit) : 1), // Ajusta el skip si no hay límite
         sort: sort ? { price: sort === 'asc' ? 1 : -1 } : undefined
       };
 

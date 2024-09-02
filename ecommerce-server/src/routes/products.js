@@ -1,71 +1,57 @@
 const express = require('express');
 const router = express.Router();
 const ProductManager = require('../managers/ProductManager');
+const { body, validationResult, param } = require('express-validator'); // Importa 'param'
 
 const productManager = new ProductManager();
 
-router.get('/', async (req, res) => {
+// Reglas de validación para el POST /api/products
+const productValidationRules = [
+  body('title').notEmpty().withMessage('El título es obligatorio'),
+  body('description').notEmpty().withMessage('La descripción es obligatoria'),
+  body('code').notEmpty().withMessage('El código es obligatorio').custom(async (value) => {
+    const existingProduct = await ProductManager.findOne({ code: value });
+    if (existingProduct) {
+      throw new Error('Ya existe un producto con este código');
+    }
+  }),
+  body('price').isNumeric().withMessage('El precio debe ser un número').isFloat({ min: 0 }).withMessage('El precio debe ser mayor o igual a cero'),
+  body('stock').isNumeric().withMessage('El stock debe ser un número').isInt({ min: 0 }).withMessage('El stock debe ser un entero mayor o igual a cero'),
+  body('category').notEmpty().withMessage('La categoría es obligatoria')
+];
+
+// POST /api/products
+router.post('/', productValidationRules, async (req, res) => {
   try {
-    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
-    const page = req.query.page ? parseInt(req.query.page) : 1;
-    const sort = req.query.sort === 'asc' ? 1 : req.query.sort === 'desc' ? -1 : null;
-    const query = req.query.query || {};
-
-    // Filtrar productos
-    let matchStage = {};
-    if (query.category) {
-      matchStage.category = query.category;
-    }
-    if (query.availability) {
-      matchStage.available = query.availability === 'true';
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        status: 'error',
+        errors: errors.array()
+      });
     }
 
-    // Preparar pipeline de agregación
-    const pipeline = [{ $match: matchStage }];
-
-    // Ordenar productos
-    if (sort) {
-      pipeline.push({ $sort: { price: sort } });
-    }
-
-    // Paginar productos
-    pipeline.push(
-      { $skip: (page - 1) * limit },
-      { $limit: limit }
-    );
-
-    // Obtener productos con paginación y conteo total
-    const [products, totalProducts] = await Promise.all([
-      productManager.getProducts(pipeline),
-      productManager.countProducts(matchStage)
-    ]);
-
-    const totalPages = Math.ceil(totalProducts / limit);
-
-    // Crear links de paginación
-    const prevPage = page > 1 ? page - 1 : null;
-    const nextPage = page < totalPages ? page + 1 : null;
-
-    res.json({
-      status: 'success',
-      payload: products,
-      totalPages,
-      prevPage,
-      nextPage,
-      page,
-      hasPrevPage: !!prevPage,
-      hasNextPage: !!nextPage,
-      prevLink: prevPage ? `/products?limit=${limit}&page=${prevPage}` : null,
-      nextLink: nextPage ? `/products?limit=${limit}&page=${nextPage}` : null
-    });
-
+    const newProduct = await productManager.addProduct(req.body);
+    res.status(201).json({ status: 'success', payload: newProduct });
   } catch (error) {
     res.status(500).json({ status: 'error', error: error.message });
   }
 });
 
-router.get('/:pid', async (req, res) => {
+// GET /api/products/:pid
+router.get('/:pid', 
+  param('pid').isMongoId().withMessage('El ID del producto no es válido'), 
+  async (req, res) => {
   try {
+    // Validar el ID del producto
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        status: 'error',
+        errors: errors.array()
+      });
+    }
+
     const product = await productManager.getProductById(req.params.pid);
     res.json({ status: 'success', payload: product });
   } catch (error) {
@@ -73,29 +59,47 @@ router.get('/:pid', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
-  try {
-    const newProduct = await productManager.addProduct(req.body);
-    res.status(201).json({ status: 'success', payload: newProduct });
-  } catch (error) {
-    res.status(400).json({ status: 'error', error: error.message });
-  }
-});
+// PUT /api/products/:pid
+router.put('/:pid', 
+  param('pid').isMongoId().withMessage('El ID del producto no es válido'), 
+  productValidationRules,
+  async (req, res) => {
+    try {
+      // Validar el ID del producto y los datos del producto
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          status: 'error',
+          errors: errors.array()
+        });
+      }
 
-router.put('/:pid', async (req, res) => {
-  try {
-    const updatedProduct = await productManager.updateProduct(req.params.pid, req.body);
-    res.json({ status: 'success', payload: updatedProduct });
-  } catch (error) {
-    res.status(404).json({ status: 'error', error: error.message });
+      const updatedProduct = await productManager.updateProduct(req.params.pid, req.body);
+      res.json({ status: 'success', payload: updatedProduct });
+    } catch (error) {
+      res.status(404).json({ status: 'error', error: error.message });
+    }
   }
-});
+);
 
-router.delete('/:pid', async (req, res) => {
+// DELETE /api/products/:pid
+router.delete('/:pid', 
+  param('pid').isMongoId().withMessage('El ID del producto no es válido'), 
+  async (req, res) => {
   try {
+    // Validar el ID del producto
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        status: 'error',
+        errors: errors.array()
+      });
+    }
+
     await productManager.deleteProduct(req.params.pid);
     res.json({ status: 'success', message: 'Producto eliminado' });
-  } catch (error) {
+  } catch (error)
+{
     res.status(404).json({ status: 'error', error: error.message });
   }
 });
