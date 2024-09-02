@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{product.title}} - Detalles del Producto</title>
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
   <h2>{{product.title}}</h2>
@@ -20,76 +21,8 @@
   <button class="add-to-cart" data-product-id="{{product._id}}">Agregar al Carrito</button>
 
   <div id="cart-link-container"></div> 
-  <a href="/">Volver al Home</a> <script>
-    const addToCartButton = document.querySelector('.add-to-cart');
-    const quantityInput = document.getElementById('quantity');
-
-    addToCartButton.addEventListener('click', async (event) => {
-      const productId = event.target.dataset.productId;
-      const quantity = parseInt(quantityInput.value); // Obtiene la cantidad
-
-      // Obtener el cartId del localStorage
-      let cartId = localStorage.getItem('cartId');
-
-      // Si no existe un carrito, crearlo
-      if (!cartId) {
-        try {
-          const response = await fetch('/api/carts', { method: 'POST' });
-          if (response.ok) {
-            const data = await response.json();
-            cartId = data.payload.cartId;
-            localStorage.setItem('cartId', cartId); // Guardar el nuevo cartId
-          } else {
-            throw new Error('Error al crear el carrito');
-          }
-        } catch (error) {
-          console.error('Error al crear el carrito:', error);
-          alert('Error al crear el carrito');
-          return;
-        }
-      }
-
-      // Agregar el producto al carrito
-      try {
-        const response = await fetch(`/api/carts/${cartId}/product/${productId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ quantity: quantity }) // Envía la cantidad
-        });
-
-        if (response.ok) {
-          alert('Producto agregado al carrito');
-          updateCartLink(cartId);
-        } else {
-          const data = await response.json();
-          alert(`Error: ${data.error}`);
-        }
-      } catch (error) {
-        console.error('Error al agregar al carrito:', error);
-        alert('Error al agregar al carrito');
-      }
-    });
-
-    // Función para actualizar el enlace del carrito
-    const updateCartLink = (cartId) => {
-      const cartLinkContainer = document.getElementById('cart-link-container');
-      cartLinkContainer.innerHTML = '';
-
-      if (cartId) {
-        const cartLink = document.createElement('a');
-        cartLink.href = `/carts/${cartId}`;
-        cartLink.textContent = 'Ver Carrito';
-        cartLinkContainer.appendChild(cartLink);
-      } else {
-        cartLinkContainer.textContent = 'Carrito vacío';
-      }
-    };
-
-    // Obtener el cartId del localStorage al cargar la página
-    const cartId = localStorage.getItem('cartId');
-    updateCartLink(cartId); // Llama a updateCartLink para inicializar el enlace
-  </script>
+  <a href="/" class="back-to-home">Volver al Home</a> 
+  <script src="/js/product.js"></script>
 </body>
 </html>
+

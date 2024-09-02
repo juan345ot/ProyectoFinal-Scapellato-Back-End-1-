@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ecommerce Server</title>
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
   <h2>Productos</h2>
@@ -19,91 +20,23 @@
     {{/each}}
   </ul>
 
-  {{#if hasPrevPage}}
-    <a href="?limit={{limit}}&page={{add currentPage -1}}&sort={{sort}}&query={{query}}">Anterior</a> 
-  {{/if}}
+  <div class="pagination">
+    {{#if hasPrevPage}}
+      <a href="?limit={{limit}}&page={{add currentPage -1}}&sort={{sort}}&query={{query}}" class="pagination-button">Anterior</a> 
+    {{/if}}
 
-  {{#each (range 1 totalPages)}}
-    <a href="?page={{this}}">{{this}}</a> 
-  {{/each}}
+    {{#each (range 1 totalPages)}}
+      <a href="?page={{this}}" class="pagination-button">{{this}}</a> 
+    {{/each}}
 
-  {{#if hasNextPage}}
-    <a href="?limit={{limit}}&page={{add currentPage 1}}&sort={{sort}}&query={{query}}">Siguiente</a> 
-  {{/if}}
+    {{#if hasNextPage}}
+      <a href="?limit={{limit}}&page={{add currentPage 1}}&sort={{sort}}&query={{query}}" class="pagination-button">Siguiente</a> 
+    {{/if}}
+  </div>
 
   <br>
   <div id="cart-link-container"></div> 
-  <script>
-    const addToCartButtons = document.querySelectorAll('.add-to-cart');
-    addToCartButtons.forEach(button => {
-      button.addEventListener('click', async (event) => {
-        const productId = event.target.dataset.productId;
-        const quantityInput = document.querySelector(`#quantity-${productId}`); // Buscar el input por ID
-        const quantity = parseInt(quantityInput.value);
-
-        // Obtener el cartId del localStorage
-        let cartId = localStorage.getItem('cartId');
-
-        // Si no existe un carrito, crearlo
-        if (!cartId) {
-          try {
-            const response = await fetch('/api/carts', { method: 'POST' });
-            if (response.ok) {
-              const data = await response.json();
-              cartId = data.payload.cartId;
-              localStorage.setItem('cartId', cartId); // Guardar el nuevo cartId
-            } else {
-              throw new Error('Error al crear el carrito');
-            }
-          } catch (error) {
-            console.error('Error al crear el carrito:', error);
-            alert('Error al crear el carrito');
-            return;
-          }
-        }
-
-        // Agregar el producto al carrito
-        try {
-          const response = await fetch(`/api/carts/${cartId}/product/${productId}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ quantity: quantity }) // Enviar la cantidad
-          });
-
-          if (response.ok) {
-            alert('Producto agregado al carrito');
-            updateCartLink(cartId);
-          } else {
-            const data = await response.json();
-            alert(`Error: ${data.error}`);
-          }
-        } catch (error) {
-          console.error('Error al agregar al carrito:', error);
-          alert('Error al agregar al carrito');
-        }
-      });
-    });
-
-    // Función para actualizar el enlace del carrito
-    const updateCartLink = (cartId) => {
-      const cartLinkContainer = document.getElementById('cart-link-container');
-      cartLinkContainer.innerHTML = '';
-
-      if (cartId) {
-        const cartLink = document.createElement('a');
-        cartLink.href = `/carts/${cartId}`;
-        cartLink.textContent = 'Ver Carrito';
-        cartLinkContainer.appendChild(cartLink);
-      } else {
-        cartLinkContainer.textContent = 'Carrito vacío';
-      }
-    };
-
-    // Obtener el cartId del localStorage al cargar la página
-    const cartId = localStorage.getItem('cartId');
-    updateCartLink(cartId); // Llama a updateCartLink para inicializar el enlace
-  </script>
+  <script src="/js/home.js"></script> 
 </body>
 </html>
+

@@ -1,0 +1,145 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+h1, h2 {
+  text-align: center;
+  color: #333;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 20px auto;
+  max-width: 800px;
+}
+
+li {
+  padding: 10px;
+  background-color: #fff;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0069d9;
+}
+
+#cart-product-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#cart-total-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+#product-list {
+  margin-bottom: 20px;
+}
+
+#add-product-form, #edit-product-form {
+  margin: 20px auto;
+  max-width: 500px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 5px;
+}
+
+#edit-product-form {
+  display: none;
+}
+
+#add-product-form label, #edit-product-form label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+#add-product-form input, #add-product-form textarea, #edit-product-form input, #edit-product-form textarea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+/* Estilos para la paginación en home.handlebars */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination-button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  margin: 0 5px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pagination-button:hover {
+  background-color: #0069d9;
+}
+
+/* Estilos para el botón "Ver Carrito" en home.handlebars y product.handlebars */
+#cart-link-container a {
+  display: inline-block;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  margin-top: 10px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#cart-link-container a:hover {
+  background-color: #0069d9;
+}
+
+/* Estilos para el botón "Volver al Home" en product.handlebars */
+.back-to-home {
+  display: block;
+  margin-top: 20px;
+  text-align: center;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.back-to-home:hover {
+  background-color: #0069d9;
+}
+
