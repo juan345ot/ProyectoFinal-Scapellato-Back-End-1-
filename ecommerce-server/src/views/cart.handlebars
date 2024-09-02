@@ -11,6 +11,7 @@
     {{#each cartProducts}}
       <li data-product-id="{{this.product._id}}">  
         {{this.product.title}} - 
+        <a href="/products/{{this.product._id}}">Ver Detalles</a> 
         Cantidad: <input type="number" class="quantity-input" min="1" value="{{this.quantity}}"> -
         <span class="unit-price">Precio unitario: ${{this.product.price}}</span> - 
         <span class="subtotal">Subtotal: ${{multiply this.quantity this.product.price}}</span> -
@@ -19,12 +20,14 @@
     {{/each}}
   </ul>
 
+  <div id="cart-total-container"></div> 
   <button id="empty-cart-button" data-cart-id="{{cartId}}">Vaciar Carrito</button>
   <a href="/">Volver al Home</a> 
 
   <script>
     const cartProductList = document.getElementById('cart-product-list');
     const emptyCartButton = document.getElementById('empty-cart-button');
+    const cartTotalContainer = document.getElementById('cart-total-container'); 
 
     cartProductList.addEventListener('click', async (event) => {
       const listItem = event.target.closest('li'); 
@@ -42,6 +45,7 @@
             if (data.status === 'success') {
               listItem.remove(); 
               alert('Producto eliminado del carrito'); 
+              updateCartTotal(); // Actualiza el total del carrito
             } else {
               alert(`Error: ${data.error}`); 
             }
@@ -72,6 +76,7 @@
               listItem.querySelector('.quantity-input').value = newQuantity; 
               listItem.querySelector('.subtotal').textContent = `Subtotal: $${(newQuantity * parseFloat(listItem.querySelector('.unit-price').textContent.replace('Precio unitario: $', ''))).toFixed(2)}`; 
               alert('Cantidad actualizada'); 
+              updateCartTotal(); // Actualiza el total del carrito
             } else {
               alert(`Error: ${data.error}`); 
             }
@@ -85,7 +90,7 @@
         }
       }
     });
-
+    
     emptyCartButton.addEventListener('click', async () => {
       const cartId = emptyCartButton.dataset.cartId;
       try {
@@ -112,7 +117,30 @@
         alert('Error al comunicarse con el servidor');
       }
     });
+
+    // Función para actualizar el total del carrito
+    const updateCartTotal = () => {
+      const cartProducts = cartProductList.querySelectorAll('li');
+      let total = 0;
+
+      cartProducts.forEach(item => {
+        const quantity = parseInt(item.querySelector('.quantity-input').value); 
+        const price = parseFloat(item.querySelector('.unit-price').textContent.replace('Precio unitario: $', '')); 
+        total += quantity * price; 
+      });
+
+      cartTotalContainer.innerHTML = ''; 
+
+      if (cartProducts.length > 0) {
+        const totalElement = document.createElement('p'); 
+        totalElement.textContent = `Total del Carrito: $${total.toFixed(2)}`; 
+        cartTotalContainer.appendChild(totalElement);
+      }
+    };
+
+    // Actualiza el total del carrito al cargar la página
+    updateCartTotal(); 
+
   </script>
 </body>
 </html>
-

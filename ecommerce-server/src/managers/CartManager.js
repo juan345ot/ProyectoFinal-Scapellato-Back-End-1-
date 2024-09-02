@@ -29,27 +29,25 @@ class CartManager {
     }
   }
 
-  async addProductToCart(cid, pid) {
+  async addProductToCart(cid, pid, quantity) {
     try {
       const cart = await Cart.findById(cid);
       if (!cart) {
         throw new Error('Carrito no encontrado');
       }
-
-      const existingProduct = cart.products.find(p => p.product.toString() === pid); 
-
+  
+      const existingProduct = cart.products.find(p => p.product.toString() === pid);
+  
       if (existingProduct) {
-        // Si el producto ya existe, solo incrementa la cantidad
-        existingProduct.quantity += 1;
+        existingProduct.quantity += quantity; // Suma la cantidad recibida
       } else {
-        // Si el producto no existe, agrégalo al carrito
-        const product = await Product.findById(pid); 
+        const product = await Product.findById(pid);
         if (!product) {
-          throw new Error('Producto no encontrado'); 
+          throw new Error('Producto no encontrado');
         }
-        cart.products.push({ product: pid, quantity: 1 });
+        cart.products.push({ product: pid, quantity: quantity }); // Usa la cantidad recibida
       }
-
+  
       await cart.save();
       return cart;
     } catch (error) {
